@@ -1,0 +1,28 @@
+---
+
+- name: Run TCPdump and save it to pcap file
+  hosts: control_node
+  gather_facts: false
+  become: true
+  tasks: 
+    - name: Run tcpdump command
+      shell: tcpdump -i any w /home/denzellgil/PCAP/captured.pcap
+      async: 100
+      poll: 0
+
+- name: Copy PCAP file to Manage Node
+  hosts: manage_node
+  become: true
+
+  tasks:
+    - name: Copy PCAP file
+      fetch:
+        src: /home/denzellgil/capture.pcap
+        dest: /tmp/captured.pcap
+        flat: yes
+      delegate_to: 192.168.56.3
+
+    - name: Extract the PCAP file
+      shell: tcpxtract -f /tmp/captured.pcap -o /tmp/PCAP/
+      
+
